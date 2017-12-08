@@ -1,57 +1,11 @@
-#include "opencv2/opencv.hpp"
-#include <iostream>
-using namespace cv;
-using namespace std;
+/* sprintf example */
+#include <stdio.h>
 
-//Global Variables
-Mat img, placeholder;
-
-
-int main(int argc, const char** argv)
+int main()
 {
-	// filename
-	// Read the input image
-	int image_number = 0;
-	int nImages = 10;
-
-	char filename[20];
-	sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
-	img = imread(filename);
-	// Resize the image to 400x400
-	Size rsize(400, 400);
-	resize(img, img, rsize);
-
-	if (img.empty())
-	{
-		return -1;
-	}
-
-	// Create an empty window
-	namedWindow("PRESS P for Previous, N for Next Image", WINDOW_AUTOSIZE);
-	// Create a callback function for any event on the mouse
-
-	imshow("PRESS P for Previous, N for Next Image", img);
-	while (1)
-	{
-		char k = waitKey(1) & 0xFF;
-		if (k == 27)
-			break;
-		//Check next image in the folder
-		if (k == 'n')
-		{
-			image_number++;
-			sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
-			img = imread(filename);
-			resize(img, img, rsize);
-		}
-		//Check previous image in he folder
-		else if (k == 'p')
-		{
-			image_number--;
-			sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
-			img = imread(filename);
-			resize(img, img, rsize);
-		}
-	}
+	char buffer[50];
+	int n, a = 5, b = 3;
+	n = sprintf_s(buffer, "%02d plus %02d is %02d", a, b, a + b);
+	printf("[%s] is a string %d chars long\n", buffer, n);
 	return 0;
 }
