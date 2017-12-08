@@ -1,21 +1,57 @@
-#include <iostream>  
-#include <opencv2/core/core.hpp>  
-#include <opencv2/highgui/highgui.hpp>  
-
+#include "opencv2/opencv.hpp"
+#include <iostream>
 using namespace cv;
+using namespace std;
 
-int main() {
-	IplImage* src = cvLoadImage("Test.png");
-	CvSize pImgSize;
-	pImgSize = cvGetSize(src);
-	IplImage* hsv = cvCreateImage(pImgSize, 8, 3);
-	IplImage* h_plane = cvCreateImage(pImgSize, 8, 1);
-	IplImage* s_plane = cvCreateImage(pImgSize, 8, 1);
-	IplImage* v_plane = cvCreateImage(pImgSize, 8, 1);
-	cvSplit(src, h_plane, s_plane, v_plane, 0);
-	cvShowImage("Color-h", h_plane);
-	cvShowImage("Color-s", s_plane);
-	cvShowImage("Color-v", v_plane);
-	cvShowImage("src", src);
-	waitKey(6000);
+//Global Variables
+Mat img, placeholder;
+
+
+int main(int argc, const char** argv)
+{
+	// filename
+	// Read the input image
+	int image_number = 0;
+	int nImages = 10;
+
+	char filename[20];
+	sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
+	img = imread(filename);
+	// Resize the image to 400x400
+	Size rsize(400, 400);
+	resize(img, img, rsize);
+
+	if (img.empty())
+	{
+		return -1;
+	}
+
+	// Create an empty window
+	namedWindow("PRESS P for Previous, N for Next Image", WINDOW_AUTOSIZE);
+	// Create a callback function for any event on the mouse
+
+	imshow("PRESS P for Previous, N for Next Image", img);
+	while (1)
+	{
+		char k = waitKey(1) & 0xFF;
+		if (k == 27)
+			break;
+		//Check next image in the folder
+		if (k == 'n')
+		{
+			image_number++;
+			sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
+			img = imread(filename);
+			resize(img, img, rsize);
+		}
+		//Check previous image in he folder
+		else if (k == 'p')
+		{
+			image_number--;
+			sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
+			img = imread(filename);
+			resize(img, img, rsize);
+		}
+	}
+	return 0;
 }
