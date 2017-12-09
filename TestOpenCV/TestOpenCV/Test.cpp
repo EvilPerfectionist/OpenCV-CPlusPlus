@@ -33,6 +33,7 @@ int main(int argc, const char** argv)
 	imshow("PRESS P for Previous, N for Next Image", img);
 	while (1)
 	{
+		imshow("PRESS P for Previous, N for Next Image", img);
 		char k = waitKey(1) & 0xFF;
 		if (k == 27)
 			break;
@@ -43,6 +44,7 @@ int main(int argc, const char** argv)
 			sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
 			img = imread(filename);
 			resize(img, img, rsize);
+			printf("here");
 		}
 		//Check previous image in he folder
 		else if (k == 'p')

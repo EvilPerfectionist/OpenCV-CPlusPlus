@@ -81,7 +81,8 @@ int main( int argc, const char** argv )
     imshow( "PRESS P for Previous, N for Next Image", img );
     while(1)
     {
-        char k = waitKey(1) & 0xFF;
+		imshow("PRESS P for Previous, N for Next Image", img);
+        char k = waitKey(30) & 0xFF;
         if (k == 27)
             break;
         //Check next image in the folder
