@@ -1,3 +1,11 @@
-﻿  Test.cpp
+﻿  train_digits.cpp
+w:\opencv-cplusplus\testopencv\testopencv\train_digits.cpp(20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\train_digits.cpp(23): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\train_digits.cpp(57): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\train_digits.cpp(64): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\train_digits.cpp(115): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\train_digits.cpp(191): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\train_digits.cpp(194): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\train_digits.cpp(195): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   TestOpenCV.vcxproj -> W:\OpenCV-CPlusPlus\TestOpenCV\x64\Debug\TestOpenCV.exe
   TestOpenCV.vcxproj -> W:\OpenCV-CPlusPlus\TestOpenCV\x64\Debug\TestOpenCV.pdb (Full PDB)

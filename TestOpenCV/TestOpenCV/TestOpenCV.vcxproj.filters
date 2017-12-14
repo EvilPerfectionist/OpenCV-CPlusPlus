@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Test.cpp">
+    <ClCompile Include="train_digits.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>

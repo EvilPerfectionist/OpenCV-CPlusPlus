@@ -1,224 +1,237 @@
-#include "opencv2/opencv.hpp"
+#include "cv.h"
+#include "highgui.h"
 #include <iostream>
-#include <cstring>
+#include <cmath>
+#include "cxcore.h"
 
-using namespace cv;
-using namespace std;
-// global variable to keep track of
-bool show = false;
+int OutputWidth = 768;
+int OutputHeight = 576;										
+#define MAX_CLUSTERS 4										//类别数
+#define SAMPLE_NUMBER 10000									//样本数 
+int hold = 0.5;
 
 
-// Create a callback for event on trackbars
-void onTrackbarActivity(int pos, void* userdata) {
-	// Just uodate the global variable that there is an event 
-	show = true;
-	return;
+/***************************
+*	计算LBP等声明函数模块  *
+***************************/
+void ComputeLBP(IplImage *img, IplImage *LBPImage) {
+	IplImage* GrayImage = cvCreateImage(cvGetSize(img), 8, 1);
+	cvCvtColor(img, GrayImage, CV_BGR2GRAY);
+	int center = 0;
+	int center_lbp = 0;
+	for (int row = 1; row < GrayImage->height - 1; row++) {
+		for (int col = 1; col < GrayImage->width - 1; col++) {
+			center = cvGetReal2D(GrayImage, row, col);
+			center_lbp = 0;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col - 1))
+				center_lbp += 1;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col))
+				center_lbp += 2;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col + 1))
+				center_lbp += 4;
+			if (center <= cvGetReal2D(GrayImage, row, col - 1))
+				center_lbp += 8;
+			if (center <= cvGetReal2D(GrayImage, row, col + 1))
+				center_lbp += 16;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col - 1))
+				center_lbp += 32;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col))
+				center_lbp += 64;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col + 1))
+				center_lbp += 128;
+			cvSetReal2D(LBPImage, row, col, center_lbp);
+		}
+	}
+}
+
+void ComputeLTP(IplImage *img, IplImage *LTPImage_p, IplImage *LTPImage_n, int K) {
+	IplImage* GrayImage = cvCreateImage(cvGetSize(img), 8, 1);
+	cvCvtColor(img, GrayImage, CV_BGR2GRAY);
+	int center = 0;
+	int center_ltp_p = 0;
+	int center_ltp_n = 0;
+	for (int row = 1; row < GrayImage->height - 1; row++) {
+		for (int col = 1; col < GrayImage->width - 1; col++) {
+			center = cvGetReal2D(GrayImage, row, col);
+			center_ltp_n = 0;
+			if (center >= cvGetReal2D(GrayImage, row - 1, col - 1) + K)
+				center_ltp_n += 1;
+			if (center >= cvGetReal2D(GrayImage, row - 1, col) + K)
+				center_ltp_n += 2;
+			if (center >= cvGetReal2D(GrayImage, row - 1, col + 1) + K)
+				center_ltp_n += 4;
+			if (center >= cvGetReal2D(GrayImage, row, col - 1) + K)
+				center_ltp_n += 8;
+			if (center >= cvGetReal2D(GrayImage, row, col + 1) + K)
+				center_ltp_n += 16;
+			if (center >= cvGetReal2D(GrayImage, row + 1, col - 1) + K)
+				center_ltp_n += 32;
+			if (center >= cvGetReal2D(GrayImage, row + 1, col) + K)
+				center_ltp_n += 64;
+			if (center >= cvGetReal2D(GrayImage, row + 1, col + 1) + K)
+				center_ltp_n += 128;
+			cvSetReal2D(LTPImage_n, row, col, center_ltp_n);//正值矩阵输入
+
+			center_ltp_p = 0;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col - 1) - K)
+				center_ltp_p += 1;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col) - K)
+				center_ltp_p += 2;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col + 1) - K)
+				center_ltp_p += 4;
+			if (center <= cvGetReal2D(GrayImage, row, col - 1) - K)
+				center_ltp_p += 8;
+			if (center <= cvGetReal2D(GrayImage, row, col + 1) - K)
+				center_ltp_p += 16;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col - 1) - K)
+				center_ltp_p += 32;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col) - K)
+				center_ltp_p += 64;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col + 1) - K)
+				center_ltp_p += 128;
+			cvSetReal2D(LTPImage_p, row, col, center_ltp_p);//负值矩阵输入
+		}
+	}
+}
+void ComputeLATP(IplImage *img, IplImage *LATPImage_p, IplImage *LATPImage_n, int K) {
+	IplImage* GrayImage = cvCreateImage(cvGetSize(img), 8, 1);
+	cvCvtColor(img, GrayImage, CV_BGR2GRAY);
+	int center = 0;
+	int center_latp_p = 0;
+	int center_latp_n = 0;
+	int c1 = 0;
+	int c2 = 0;
+	int c3 = 0;
+	int c4 = 0;
+	int c5 = 0;
+	int c6 = 0;
+	int c7 = 0;
+	int c8 = 0;
+	double u = 0;
+	double q = 0;
+	for (int row = 1; row < GrayImage->height - 1; row++) {
+		for (int col = 1; col < GrayImage->width - 1; col++)
+		{
+			center = cvGetReal2D(GrayImage, row, col);
+			c1 = cvGetReal2D(GrayImage, row - 1, col - 1);
+			c2 = cvGetReal2D(GrayImage, row - 1, col);
+			c3 = cvGetReal2D(GrayImage, row - 1, col + 1);
+			c4 = cvGetReal2D(GrayImage, row, col - 1);
+			c5 = cvGetReal2D(GrayImage, row, col + 1);
+			c6 = cvGetReal2D(GrayImage, row + 1, col - 1);
+			c7 = cvGetReal2D(GrayImage, row + 1, col);
+			c8 = cvGetReal2D(GrayImage, row + 1, col + 1);
+
+			u = (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8) / 8;
+			q = sqrt((c1 - u)*(c1 - u) + (c2 - u)*(c2 - u) + (c3 - u)*(c3 - u) + (c4 - u)*(c4 - u) + (c5 - u)*(c5 - u) + (c6 - u)*(c6 - u) + (c7 - u)*(c7 - u) + (c8 - u)*(c8 - u));
+			center = (int)u - K*(int)q;
+			center_latp_p = 0;
+			if (center >= cvGetReal2D(GrayImage, row - 1, col - 1))
+				center_latp_p += 1;
+			if (center >= cvGetReal2D(GrayImage, row - 1, col))
+				center_latp_p += 2;
+			if (center >= cvGetReal2D(GrayImage, row - 1, col + 1))
+				center_latp_p += 4;
+			if (center >= cvGetReal2D(GrayImage, row, col - 1))
+				center_latp_p += 8;
+			if (center >= cvGetReal2D(GrayImage, row, col + 1))
+				center_latp_p += 16;
+			if (center >= cvGetReal2D(GrayImage, row + 1, col - 1))
+				center_latp_p += 32;
+			if (center >= cvGetReal2D(GrayImage, row + 1, col))
+				center_latp_p += 64;
+			if (center >= cvGetReal2D(GrayImage, row + 1, col + 1))
+				center_latp_p += 128;
+			cvSetReal2D(LATPImage_p, row, col, center_latp_p);//正值矩阵输入
+
+			center = (int)u + K*(int)q;
+			center_latp_n = 0;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col - 1))
+				center_latp_n += 1;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col))
+				center_latp_n += 2;
+			if (center <= cvGetReal2D(GrayImage, row - 1, col + 1))
+				center_latp_n += 4;
+			if (center <= cvGetReal2D(GrayImage, row, col - 1))
+				center_latp_n += 8;
+			if (center <= cvGetReal2D(GrayImage, row, col + 1))
+				center_latp_n += 16;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col - 1))
+				center_latp_n += 32;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col))
+				center_latp_n += 64;
+			if (center <= cvGetReal2D(GrayImage, row + 1, col + 1))
+				center_latp_n += 128;
+			cvSetReal2D(LATPImage_n, row, col, center_latp_n);//负值矩阵输入
+		}
+	}
 }
 
 
-int main(int argc, char **argv)
-{
-	int image_number = 0;
-	int nImages = 10;
-	/*if (argc > 1)
-		nImages = atoi(argv[1]);*/
-	char filename[20];
-	sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
 
-	Mat original = imread(filename);
+int main(int argc, char** argv) {
 
-	// image resize width and height 
-	int resizeHeight = 250;
-	int resizeWidth = 250;
-	Size rsize(resizeHeight, resizeWidth);
-	resize(original, original, rsize);
 
-	// position on the screen where the windows start 
-	int initialX = 50;
-	int	initialY = 50;
+	CvSize size;
+	size.width = 768;
+	size.height = 576;
+	IplImage * img = cvCreateImageHeader(size, IPL_DEPTH_8U, 3);
 
-	// creating windows to display images 
-	namedWindow("P-> Previous, N-> Next", WINDOW_AUTOSIZE);
-	namedWindow("SelectBGR", WINDOW_AUTOSIZE);
-	namedWindow("SelectHSV", WINDOW_AUTOSIZE);
-	namedWindow("SelectYCB", WINDOW_AUTOSIZE);
-	namedWindow("SelectLAB", WINDOW_AUTOSIZE);
+	int value = 0;
 
-	// moving the windows to stack them horizontally 
-	moveWindow("P-> Previous, N-> Next", initialX, initialY);
-	moveWindow("SelectBGR", initialX + 1 * (resizeWidth + 5), initialY);
-	moveWindow("SelectHSV", initialX + 2 * (resizeWidth + 5), initialY);
-	moveWindow("SelectYCB", initialX + 3 * (resizeWidth + 5), initialY);
-	moveWindow("SelectLAB", initialX + 4 * (resizeWidth + 5), initialY);
+	IplImage* LBPImage = cvCreateImage(size, 8, 1);
+	IplImage* GrayImage = cvCreateImage(cvGetSize(img), 8, 1);
+	IplImage *LTPImage_p = cvCreateImage(size, 8, 1);
 
-	// creating trackbars to get values for YCrCb 
-	createTrackbar("CrMin", "SelectYCB", 0, 255, onTrackbarActivity);
-	createTrackbar("CrMax", "SelectYCB", 0, 255, onTrackbarActivity);
-	createTrackbar("CbMin", "SelectYCB", 0, 255, onTrackbarActivity);
-	createTrackbar("CbMax", "SelectYCB", 0, 255, onTrackbarActivity);
-	createTrackbar("YMin", "SelectYCB", 0, 255, onTrackbarActivity);
-	createTrackbar("YMax", "SelectYCB", 0, 255, onTrackbarActivity);
+	IplImage *LTPImage_n = cvCreateImage(size, 8, 1);
 
-	// creating trackbars to get values for HSV 
-	createTrackbar("HMin", "SelectHSV", 0, 180, onTrackbarActivity);
-	createTrackbar("HMax", "SelectHSV", 0, 180, onTrackbarActivity);
-	createTrackbar("SMin", "SelectHSV", 0, 255, onTrackbarActivity);
-	createTrackbar("SMax", "SelectHSV", 0, 255, onTrackbarActivity);
-	createTrackbar("VMin", "SelectHSV", 0, 255, onTrackbarActivity);
-	createTrackbar("VMax", "SelectHSV", 0, 255, onTrackbarActivity);
 
-	// creating trackbars to get values for BGR 
-	createTrackbar("BMin", "SelectBGR", 0, 255, onTrackbarActivity);
-	createTrackbar("BMax", "SelectBGR", 0, 255, onTrackbarActivity);
-	createTrackbar("GMin", "SelectBGR", 0, 255, onTrackbarActivity);
-	createTrackbar("GMax", "SelectBGR", 0, 255, onTrackbarActivity);
-	createTrackbar("RMin", "SelectBGR", 0, 255, onTrackbarActivity);
-	createTrackbar("RMax", "SelectBGR", 0, 255, onTrackbarActivity);
+	cvNamedWindow("img", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("LBP", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("LTP_p", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("LTP_n", CV_WINDOW_AUTOSIZE);
 
-	// creating trackbars to get values for LAB 
-	createTrackbar("LMin", "SelectLAB", 0, 255, onTrackbarActivity);
-	createTrackbar("LMax", "SelectLAB", 0, 255, onTrackbarActivity);
-	createTrackbar("AMin", "SelectLAB", 0, 255, onTrackbarActivity);
-	createTrackbar("AMax", "SelectLAB", 0, 255, onTrackbarActivity);
-	createTrackbar("BMin", "SelectLAB", 0, 255, onTrackbarActivity);
-	createTrackbar("BMax", "SelectLAB", 0, 255, onTrackbarActivity);
+	while (1)
+	{
+		img = cvLoadImage("1.jpg");
 
-	// show all images initially 
-	imshow("SelectHSV", original);
-	imshow("SelectYCB", original);
-	imshow("SelectLAB", original);
-	imshow("SelectBGR", original);
+		IplImage *t = cvCloneImage(img);										
 
-	// declare local variables
-	int BMin, GMin, RMin;
-	int BMax, GMax, RMax;
-	Scalar minBGR, maxBGR;
+		ComputeLBP(img, LBPImage);
+		ComputeLTP(img, LTPImage_p, LTPImage_n, 1);
 
-	int HMin, SMin, VMin;
-	int HMax, SMax, VMax;
-	Scalar minHSV, maxHSV;
 
-	int LMin, aMin, bMin;
-	int LMax, aMax, bMax;
-	Scalar minLab, maxLab;
+		cvCvtColor(img, GrayImage, CV_BGR2GRAY);
 
-	int YMin, CrMin, CbMin;
-	int YMax, CrMax, CbMax;
-	Scalar minYCrCb, maxYCrCb;
+		
+		cvShowImage("img", img);
+		cvShowImage("LBP", LBPImage);
+		cvShowImage("LTP_p", LTPImage_p);
+		cvShowImage("LTP_n", LTPImage_n);
 
-	Mat imageBGR, imageHSV, imageLab, imageYCrCb;
-	Mat maskBGR, maskHSV, maskLab, maskYCrCb;
-	Mat resultBGR, resultHSV, resultLab, resultYCrCb;
-
-	char k;
-	while (1) {
-		imshow("P-> Previous, N-> Next", original);
-		k = waitKey(1) & 0xFF;
-		//Check next image in the folder
-		if (k == 'n')
-		{
-			image_number++;
-			sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
-			original = imread(filename);
-			resize(original, original, rsize);
-			show = true;
+		cvReleaseImage(&t);
+		int c = cvWaitKey(33);
+		if (c == 'p') {
+			c = 0;
+			while (c != 'p' && c != 27) {
+				c = cvWaitKey(250);
+			}
 		}
-		//Check previous image in he folder
-		else if (k == 'p')
-		{
-			image_number--;
-			sprintf_s(filename, "images/rub%02d.jpg", image_number%nImages);
-			original = imread(filename);
-			resize(original, original, rsize);
-			show = true;
+		if (c == 27) {
+			return 0;
 		}
-
-		// Close all windows when 'esc' key is pressed		
-		if (k == 27) {
-			break;
-		}
-
-		if (show) { //If there is any event on the trackbar
-			show = false;
-
-			// Get values from the BGR trackbar
-			BMin = getTrackbarPos("BMin", "SelectBGR");
-			GMin = getTrackbarPos("GMin", "SelectBGR");
-			RMin = getTrackbarPos("RMin", "SelectBGR");
-
-			BMax = getTrackbarPos("BMax", "SelectBGR");
-			GMax = getTrackbarPos("GMax", "SelectBGR");
-			RMax = getTrackbarPos("RMax", "SelectBGR");
-
-			minBGR = Scalar(BMin, GMin, RMin);
-			maxBGR = Scalar(BMax, GMax, RMax);
-
-			// Get values from the HSV trackbar
-			HMin = getTrackbarPos("HMin", "SelectHSV");
-			SMin = getTrackbarPos("SMin", "SelectHSV");
-			VMin = getTrackbarPos("VMin", "SelectHSV");
-
-			HMax = getTrackbarPos("HMax", "SelectHSV");
-			SMax = getTrackbarPos("SMax", "SelectHSV");
-			VMax = getTrackbarPos("VMax", "SelectHSV");
-
-			minHSV = Scalar(HMin, SMin, VMin);
-			maxHSV = Scalar(HMax, SMax, VMax);
-
-			// Get values from the LAB trackbar
-			LMin = getTrackbarPos("LMin", "SelectLAB");
-			aMin = getTrackbarPos("AMin", "SelectLAB");
-			bMin = getTrackbarPos("BMin", "SelectLAB");
-
-			LMax = getTrackbarPos("LMax", "SelectLAB");
-			aMax = getTrackbarPos("AMax", "SelectLAB");
-			bMax = getTrackbarPos("BMax", "SelectLAB");
-
-			minLab = Scalar(LMin, aMin, bMin);
-			maxLab = Scalar(LMax, aMax, bMax);
-
-			// Get values from the YCrCb trackbar
-			YMin = getTrackbarPos("YMin", "SelectYCB");
-			CrMin = getTrackbarPos("CrMin", "SelectYCB");
-			CbMin = getTrackbarPos("CbMin", "SelectYCB");
-
-			YMax = getTrackbarPos("YMax", "SelectYCB");
-			CrMax = getTrackbarPos("CrMax", "SelectYCB");
-			CbMax = getTrackbarPos("CbMax", "SelectYCB");
-
-			minYCrCb = Scalar(YMin, CrMin, CbMin);
-			maxYCrCb = Scalar(YMax, CrMax, CbMax);
-
-			// Convert the BGR image to other color spaces
-			original.copyTo(imageBGR);
-			cvtColor(original, imageHSV, COLOR_BGR2HSV);
-			cvtColor(original, imageYCrCb, COLOR_BGR2YCrCb);
-			cvtColor(original, imageLab, COLOR_BGR2Lab);
-
-			// Create the mask using the min and max values obtained from trackbar and apply bitwise and operation to get the results
-			inRange(imageBGR, minBGR, maxBGR, maskBGR);
-			resultBGR = Mat::zeros(original.rows, original.cols, CV_8UC3);
-			bitwise_and(original, original, resultBGR, maskBGR);
-
-			inRange(imageHSV, minHSV, maxHSV, maskHSV);
-			resultHSV = Mat::zeros(original.rows, original.cols, CV_8UC3);
-			bitwise_and(original, original, resultHSV, maskHSV);
-
-			inRange(imageYCrCb, minYCrCb, maxYCrCb, maskYCrCb);
-			resultYCrCb = Mat::zeros(original.rows, original.cols, CV_8UC3);
-			bitwise_and(original, original, resultYCrCb, maskYCrCb);
-
-			inRange(imageLab, minLab, maxLab, maskLab);
-			resultLab = Mat::zeros(original.rows, original.cols, CV_8UC3);
-			bitwise_and(original, original, resultLab, maskLab);
-
-			// Show the results
-			imshow("SelectBGR", resultBGR);
-			imshow("SelectYCB", resultYCrCb);
-			imshow("SelectLAB", resultLab);
-			imshow("SelectHSV", resultHSV);
-		}
+		
+		cvZero(img);
+		/*img = cvQueryFrame(capture);*/
 	}
-	destroyAllWindows();
+
+	cvWaitKey(0);
+	cvReleaseImage(&img);
+	cvReleaseImage(&LBPImage);
+	cvReleaseImage(&LTPImage_p);
+	cvReleaseImage(&LTPImage_n);
+	cvDestroyAllWindows();
+
 	return 0;
+
 }
