@@ -169,6 +169,5 @@ int main(int argc, char* argv[])
 	cvReleaseImage(&img);
 	cvDestroyAllWindows();
 	cvReleaseMat(&points);
-	cvReleaseMat(&clusters);
 	return 0;
 }
