@@ -85,8 +85,6 @@ int main(int argc, char* argv[])
 	float s[8] = {0};
 	CvMat* points   = cvCreateMat( sample_count,14, CV_32FC1);					//数据样本
 	CvMat* points2  = cvCreateMat( sample_count, 1, CV_32FC2);					//储存坐标信息
-	CvMat* clusters = cvCreateMat( sample_count, 1, CV_32SC1);					//标签
-	CvMat* centers  = cvCreateMat(cluster_count, 1, CV_32FC2);					//如何初始化中心点？？？？
 
 	while(1){
 		
