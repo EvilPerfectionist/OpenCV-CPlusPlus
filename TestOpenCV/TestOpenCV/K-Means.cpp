@@ -6,9 +6,10 @@
 #include <iostream>
 #include <cmath>
 #include "cxcore.h"
+using namespace cv;
 
 int OutputWidth  = 300;
-int OutputHeight = 300; 
+int OutputHeight = 300; 									
 #define MAX_CLUSTERS 2										//类别数
 #define SAMPLE_NUMBER 10000									//样本数 
 #define PI 3.14159265
@@ -56,47 +57,6 @@ void ComputeLTP(IplImage *GrayImage, int i, int j,float s[8], int binp[8],int bi
 			s[p] = 0;
 	}
 }
-void ComputeLBP(IplImage *GrayImage, int i, int j,float s[8], int binp[8]/*,int bino[8]*/,int binn[8]){
-	int u ;
-	double q = 0;
-	int   c[8];
-	int p;
-	for (int m = 0; m< kernel; m++){
-		for (int n = 0; n< kernel; n++){
-			u    = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2  , i+3*(2*m-kernel+1)/2  );
-			c[0] = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2-1, i+3*(2*m-kernel+1)/2-1);
-			c[1] = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2-1, i+3*(2*m-kernel+1)/2  );
-			c[2] = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2-1, i+3*(2*m-kernel+1)/2+1);
-			c[3] = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2  , i+3*(2*m-kernel+1)/2+1);
-			c[4] = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2+1, i+3*(2*m-kernel+1)/2+1);
-			c[5] = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2+1, i+3*(2*m-kernel+1)/2  );
-			c[6] = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2+1, i+3*(2*m-kernel+1)/2-1);
-			c[7] = cvGetReal2D(GrayImage, j+3*(2*n-kernel+1)/2  , i+3*(2*m-kernel+1)/2-1);
-			//for ( p = 0; p < 8; p++){
-			//	u = u + c[p];
-			//	q = q + c[p]*c[p];
-			//}
-			//u = u/8;
-			//q = sqrt(q);
-			for ( p = 0; p < 8; p++){
-				if		( u <= (c[p]/* - hold */))
-					binp[p]++;
-				else/* if ( u >= (c[p] + hold ))*/
-					binn[p]++;
-				/*else
-					bino[p]++;*/
-			}
-		}
-	}
-	for ( p = 0; p < 8; p++){
-		if ( /*(binp[p] >= bino[p])&&*/(binp[p] >= binn[p]))
-			s[p] = 1;
-		/*else if ( (bino[p] > binp[p])&&(bino[p] > binn[p]))
-			s[p] = 0.5;*/
-		else 
-			s[p] = 0;
-	}
-}
 int main(int argc, char* argv[])
 {
 	CvSize size;
@@ -118,12 +78,6 @@ int main(int argc, char* argv[])
 
 	cvNamedWindow("clusters",CV_WINDOW_AUTOSIZE);
 
-	//CvMat *intrinsic  = (CvMat*)cvLoad("Intrinsics.xml");
-	//CvMat *distortion = (CvMat*)cvLoad("Distortion.xml");						//读取内参数和畸变参数
-	//IplImage* mapx    = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1);
-	//IplImage* mapy    = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1);
-	//cvInitUndistortMap( intrinsic, distortion, mapx, mapy);						//建立无畸变地图
-
 	int k, p, cluster_count = MAX_CLUSTERS;
 	int i, j,  sample_count = SAMPLE_NUMBER;
 	float s[8] = {0};	
@@ -132,23 +86,22 @@ int main(int argc, char* argv[])
 	CvMat* points   = cvCreateMat( sample_count,14, CV_32FC1);					//数据样本
 	CvMat* points2  = cvCreateMat( sample_count, 1, CV_32FC2);					//储存坐标信息
 	CvMat* clusters = cvCreateMat( sample_count, 1, CV_32SC1);					//标签
-	CvMat* centers  = cvCreateMat(cluster_count, 1, CV_32FC2);					
+	CvMat* centers  = cvCreateMat(cluster_count, 2, CV_32FC2);					
 
-	((CvPoint2D32f*)centers->data.fl)[0].x = 192;								//初始化中心点
-	((CvPoint2D32f*)centers->data.fl)[0].y = 288;
-	((CvPoint2D32f*)centers->data.fl)[1].x = 384;
-	((CvPoint2D32f*)centers->data.fl)[1].y = 432;
-	((CvPoint2D32f*)centers->data.fl)[2].x = 576;
-	((CvPoint2D32f*)centers->data.fl)[2].y = 288;
-	((CvPoint2D32f*)centers->data.fl)[3].x = 384;
-	((CvPoint2D32f*)centers->data.fl)[3].y = 144;
+	((CvPoint2D32f*)centers->data.fl)[0].x = 192/2;								//初始化中心点
+	((CvPoint2D32f*)centers->data.fl)[0].y = 288/2;
+	((CvPoint2D32f*)centers->data.fl)[1].x = 384/2;
+	((CvPoint2D32f*)centers->data.fl)[1].y = 432/2;
+//	((CvPoint2D32f*)centers->data.fl)[2].x = 576/2;
+//	((CvPoint2D32f*)centers->data.fl)[2].y = 288/2;
+//	((CvPoint2D32f*)centers->data.fl)[3].x = 384/2;
+//	((CvPoint2D32f*)centers->data.fl)[3].y = 144/2;
 
 	while(1){
 		//double time = (double)getTickCount(); 
 		/*CaptureFromCG(img);*/
 		img = cvLoadImage("4.jpg");
 		IplImage *t = cvCloneImage(img);
-		//cvRemap( t, img, mapx, mapy);											//显示无畸变图像
 		cvCvtColor(img, hsv      , CV_BGR2HSV );
 		cvCvtColor(img, GrayImage, CV_BGR2GRAY);
 		/*多元高斯分布生成随机样本*/
@@ -189,6 +142,7 @@ int main(int argc, char* argv[])
 		cvKMeans2( points, cluster_count, clusters,
 			cvTermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0),
 			1, 0, 0, centers,0);
+//		kmeans(points, cluster_count, clusters, cvTermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0), 1, KMEANS_RANDOM_CENTER, centers);
 		float posi = 0, nega = 0;
 		int nposi = 0, nnega = 0;		
 		for ( k = 0; k < sample_count; k ++){
@@ -211,7 +165,7 @@ int main(int argc, char* argv[])
 		cvShowImage("clusters", img );
 		cvReleaseImage( &t);
 		
-		FILE* file1=fopen("c:\points.txt","w+");
+/*		FILE* file1=fopen("points.txt","w+");
 		for(i=0;i<points->rows;i++){  
 			for(j=0;j<points->cols;j++){  				
 				fprintf(file1,"%f ",cvGet2D( points, i, j ));  
@@ -219,21 +173,21 @@ int main(int argc, char* argv[])
 			fprintf(file1,"\n");  
 		}  
 		fclose(file1);
-		FILE* file2=fopen("c:\clusters.txt","w+");
+		FILE* file2=fopen("clusters.txt","w+");
 		if( (posi/nposi)>(nega/nnega) ){
 			for (k = 0; k<sample_count; k++){
 				fprintf(file2,"%2d",clusters->data.i[k]);
 				/*fprintf(file,"\n");*/
-			}
+/*			}
 		}
 		else{
 			for (k = 0; k<sample_count; k++){
 				fprintf(file2,"%2d",1-clusters->data.i[k]);
 				/*fprintf(file,"\n");*/
-			}
+/*			}
 		}
 		fclose(file2);
-		FILE* file3=fopen("c:\locations.txt","w+");
+		FILE* file3=fopen("locations.txt","w+");
 		for(i=0;i<points2->rows;i++){  
 			for(j=0;j<points2->cols;j++){  				
 				fprintf(file1,"%f ",cvGet2D( points2, i, j ));  
@@ -241,7 +195,7 @@ int main(int argc, char* argv[])
 			fprintf(file1,"\n");  
 		}  
 		fclose(file3);
-
+*/
 		int c = cvWaitKey(0);
 		if(c=='p'){
 			c = 0;

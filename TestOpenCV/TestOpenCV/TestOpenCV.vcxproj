@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PCA.cpp" />
+    <ClCompile Include="K-Means.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{194F027B-C476-4DF5-BB75-86AF98C0C885}</ProjectGuid>

@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PCA.cpp">
+    <ClCompile Include="K-Means.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
