@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
 		PrintMatrix(pResult,SAMPLE_NUMBER,10);
 		
 		printf("\nEigne Vector:\n");
-		PrintMatrix(pRecon,SAMPLE_NUMBER,10);	
+		PrintMatrix(pRecon,SAMPLE_NUMBER,14);	
 		
 		
 		cvShowImage("clusters", img );
