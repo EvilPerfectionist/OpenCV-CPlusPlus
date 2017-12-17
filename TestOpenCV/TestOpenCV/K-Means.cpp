@@ -1,17 +1,19 @@
 // 图像处理.cpp : 定义控制台应用程序的入口点。
 //
-
+#include "opencv2/highgui.hpp"
+#include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
 #include "cv.h"
 #include "highgui.h"
 #include <iostream>
 #include <cmath>
 #include "cxcore.h"
 using namespace cv;
-
+using namespace std;
 int OutputWidth  = 300;
 int OutputHeight = 300; 									
 #define MAX_CLUSTERS 2										//类别数
-#define SAMPLE_NUMBER 10000									//样本数 
+#define SAMPLE_NUMBER 100									//样本数 
 #define PI 3.14159265
 int hold = 2;												//LTP阈值
 int kernel = 3;												//LTP直方图 n*n算子
@@ -83,19 +85,19 @@ int main(int argc, char* argv[])
 	float s[8] = {0};	
 
 
-	CvMat* points   = cvCreateMat( sample_count,14, CV_32FC1);					//数据样本
+	CvMat* points   = cvCreateMat( sample_count, 14, CV_32FC1);					//数据样本
 	CvMat* points2  = cvCreateMat( sample_count, 1, CV_32FC2);					//储存坐标信息
 	CvMat* clusters = cvCreateMat( sample_count, 1, CV_32SC1);					//标签
-	CvMat* centers  = cvCreateMat(cluster_count, 2, CV_32FC2);					
+	CvMat* centers  = cvCreateMat(cluster_count, 14, CV_32FC2);					
 
-	((CvPoint2D32f*)centers->data.fl)[0].x = 192/2;								//初始化中心点
-	((CvPoint2D32f*)centers->data.fl)[0].y = 288/2;
-	((CvPoint2D32f*)centers->data.fl)[1].x = 384/2;
-	((CvPoint2D32f*)centers->data.fl)[1].y = 432/2;
-//	((CvPoint2D32f*)centers->data.fl)[2].x = 576/2;
-//	((CvPoint2D32f*)centers->data.fl)[2].y = 288/2;
-//	((CvPoint2D32f*)centers->data.fl)[3].x = 384/2;
-//	((CvPoint2D32f*)centers->data.fl)[3].y = 144/2;
+	((CvPoint2D32f*)centers->data.fl)[0].x = 192/3;								//初始化中心点
+	((CvPoint2D32f*)centers->data.fl)[0].y = 288/3;
+	((CvPoint2D32f*)centers->data.fl)[1].x = 384/3;
+	((CvPoint2D32f*)centers->data.fl)[1].y = 432/3;
+	((CvPoint2D32f*)centers->data.fl)[2].x = 576/3;
+	((CvPoint2D32f*)centers->data.fl)[2].y = 288/3;
+	((CvPoint2D32f*)centers->data.fl)[3].x = 384/3;
+	((CvPoint2D32f*)centers->data.fl)[3].y = 144/3;
 
 	while(1){
 		//double time = (double)getTickCount(); 
@@ -134,16 +136,17 @@ int main(int argc, char* argv[])
 					e[p+6].val[0] = s[p];
 				}
 				for ( p = 0; p < 14; p++){
-					cvSet2D( points, k, p, e[p]);
+					cvSet2D( points, k, p, e[p].val[0]);
 				}
 				k++;
 			}
 		}
-		cvKMeans2( points, cluster_count, clusters,
-			cvTermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0),
-			1, 0, 0, centers,0);
+		cvKMeans2( points, cluster_count, clusters, cvTermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0), 10, 0, 0, centers, 0);
+//		kmeans(points, cluster_count, clusters,
+//			TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 10, 1.0),
+//			3, KMEANS_PP_CENTERS, centers);
 //		kmeans(points, cluster_count, clusters, cvTermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0), 1, KMEANS_RANDOM_CENTER, centers);
-		float posi = 0, nega = 0;
+/*		float posi = 0, nega = 0;
 		int nposi = 0, nnega = 0;		
 		for ( k = 0; k < sample_count; k ++){
 			CvPoint2D32f pt = ((CvPoint2D32f*)points2->data.fl)[k];	
