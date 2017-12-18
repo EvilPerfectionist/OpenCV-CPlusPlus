@@ -1,3 +1,18 @@
-﻿  KmeansTest.cpp
+﻿  K-Means.cpp
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(24): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(25): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(26): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(27): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(28): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(29): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(30): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(31): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(32): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(103): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(104): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(160): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'double'
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(160): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 2 has type 'double'
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(161): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'double'
+w:\opencv-cplusplus\testopencv\testopencv\k-means.cpp(161): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 2 has type 'double'
   TestOpenCV.vcxproj -> W:\OpenCV-CPlusPlus\TestOpenCV\x64\Debug\TestOpenCV.exe
   TestOpenCV.vcxproj -> W:\OpenCV-CPlusPlus\TestOpenCV\x64\Debug\TestOpenCV.pdb (Full PDB)

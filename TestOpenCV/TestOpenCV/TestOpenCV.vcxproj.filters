@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="KmeansTest.cpp">
+    <ClCompile Include="K-Means.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>

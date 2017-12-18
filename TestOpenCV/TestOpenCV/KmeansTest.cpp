@@ -23,6 +23,7 @@ void main(int argc, char** argv)
 		int i, sample_count = cvRandInt(&rng) % 1000 + 1;
 		CvMat* points = cvCreateMat(sample_count, 1, CV_32FC2);
 		CvMat* clusters = cvCreateMat(sample_count, 1, CV_32SC1);
+		CvMat* centroids = cvCreateMat(cluster_count, 1, CV_32FC2);
 		/* generate random sample from multivariate
 		Gaussian distribution */
 		for (k = 0; k < cluster_count; k++)
@@ -51,7 +52,7 @@ void main(int argc, char** argv)
 		}
 		cvKMeans2(points, cluster_count, clusters,
 			cvTermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER,
-				10, 1.0));
+				10, 1.0),1 ,0 ,0 , centroids , 0);
 		cvZero(img);
 		for (i = 0; i < sample_count; i++)
 		{
@@ -59,6 +60,11 @@ void main(int argc, char** argv)
 			int cluster_idx = clusters->data.i[i];
 			cvCircle(img, cvPointFrom32f(pt), 2,
 				color_tab[cluster_idx], CV_FILLED);
+		}
+		for (i = 0; i < cluster_count; i++) {												//ÖÊÐÄµã
+			CvPoint2D32f pt3 = ((CvPoint2D32f*)centroids->data.fl)[i];
+			cvCircle(img, cvPointFrom32f(pt3), 20, color_tab[i], CV_FILLED);
+			printf("%d,%d\n", ((CvPoint2D32f*)centroids->data.fl)[i].x, ((CvPoint2D32f*)centroids->data.fl)[i].y);
 		}
 		cvReleaseMat(&points);
 		cvReleaseMat(&clusters);
