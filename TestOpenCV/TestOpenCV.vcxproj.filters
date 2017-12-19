@@ -18,7 +18,7 @@
     <ClCompile Include="svm.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="Test.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>

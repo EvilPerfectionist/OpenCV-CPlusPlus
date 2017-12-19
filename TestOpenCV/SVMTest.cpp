@@ -129,8 +129,6 @@ int main(int argc, _TCHAR* argv[])
 	cvNamedWindow("SVM-Result",	CV_WINDOW_AUTOSIZE);	
 	cvNamedWindow("Source",	CV_WINDOW_AUTOSIZE);
 
-	IplImage* mapx    = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1);
-	IplImage* mapy    = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1);
 	while (1){
 		
 		img = cvLoadImage("4.jpg");
